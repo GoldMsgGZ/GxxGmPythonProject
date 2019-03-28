@@ -23,11 +23,12 @@ WORKSTATION_VERSION = "3.4.5"
 WORKSTATION_AUTHKEY = "GM3019013044030358901281317526"
 WORKSTATION_DOMAIN = "44030300"
 
+# 网关信息
 GATEWAY_IP = "192.168.56.97"
 GATEWAY_PORT = "6801"
 
-
-DSJ_GBCODE = ""
+# 接入的执法仪信息
+DSJ_GBCODE = "44030358901511317526"
 
 # 工作频率，单位：秒
 HEARTBEAT_RATE = 5
@@ -69,6 +70,7 @@ class GxxGmWSSimulator:
         self.police_list = list()
         self.suborgs_list = list()
         self.dsj_code = ""
+        self.workstation_org_domain = ""
 
         self.gateway_ip = "127.0.0.1"
         self.gateway_port = "6802"
@@ -142,6 +144,7 @@ class GxxGmWSSimulator:
 
         # 解析数据
         self.workstation_org_id = content_json["body"]["bmbh"]
+        self.workstation_org_domain = content_json["body"]["bmbh"][0:8]
 
         return err_code
 
@@ -209,8 +212,10 @@ class GxxGmWSSimulator:
 
         # 根据当前派出所民警情况，上报文件信息，每人每次至少上报10条
         file_infos = list()
+        file_index = 0
         for police_info in self.police_list:
             for index in range(10):
+                file_index += 1
                 # 这里要构建几个内容：
                 # 获得当前时间
                 take_time = datetime.datetime.now()
@@ -222,53 +227,55 @@ class GxxGmWSSimulator:
                 import_time_str2 = import_time.strftime('%Y-%m-%d %H:%M:%S')
 
                 # 文件编号
-                wjbh = "%s_%s%s0000%s%04d" % (self.workstation_org_id, self.dsj_code, take_time_str, import_time_str, index)
+                wjbh = "%s_%s%s0000%s%04d" % (self.workstation_org_domain, self.dsj_code, take_time_str, import_time_str, file_index)
 
                 # 文件别名
                 wjbm = "%s%s%04d.mp4" % (self.dsj_code, take_time, index)
 
                 # 开始组装文件信息
                 file_info = dict()
-                # 文件编号，遵循编号规则
+                # 1.文件编号，遵循编号规则
                 file_info["wjbh"] = wjbh
-                # 文件别名
+                # 2.文件别名
                 file_info["wjbm"] = wjbm
-                # 文件拍摄时间:YYYY-MM-DD hh:mm:ss
+                # 3.文件拍摄时间:YYYY-MM-DD hh:mm:ss
                 file_info["pssj"] = take_time_str2
-                # 文件大小,单位字节
+                # 4.文件大小,单位字节
                 file_info["wjdx"] = 1.5 * 1024 * 1024 * 1024
-                # 文件类型:0视频、1音频、2图片、3文本、4其他、5-99预留
-                file_info["wjlx"] = 0
-                # 秒，非视频语音为0
+                # 5.文件类型:0视频、1音频、2图片、3文本、4其他、5-99预留
+                file_info["wjlx"] = "0"
+                # 6.秒，非视频语音为0
                 file_info["wjsc"] = 900
-                # 文件备注：0普通文件，1执法仪重点标记文件
-                file_info["bzlx"] = 0
-                # 单位编号或部门编号
-                file_info["jgdm"] = ""
-                # 警员单位名称或部门名称
-                file_info["dwmc"] = ""
-                # 警员编号
-                file_info["jybh"] = ""
-                # 警员姓名
-                file_info["jy_xm"] = ""
-                # 执法仪产品型号，通用版需遵循编号规则
+                # 7.文件备注：0普通文件，1执法仪重点标记文件
+                file_info["bzlx"] = "0"
+                # 8.单位编号或部门编号，使用民警部门编号的话，有可能是12位的
+                file_info["jgdm"] = police_info["bmbh"]
+                # 9.警员单位名称或部门名称
+                file_info["dwmc"] = police_info["bmmc"]
+                # 10.警员编号
+                file_info["jybh"] = police_info["jybh"]
+                # 11.警员姓名
+                file_info["jy_xm"] = police_info["jyxm"]
+                # 12.执法仪产品型号，通用版需遵循编号规则
                 file_info["cpxh"] = self.dsj_code
-                # 采集站产品编码编号，遵循编号规则
+                # 13.采集站产品编码编号，遵循编号规则
                 file_info["gzz_xh"] = self.device_code
-                # 上传时间，格式为：yyyy-MM-dd HH:mm:ss
+                # 14.上传时间，格式为：yyyy-MM-dd HH:mm:ss
                 file_info["scsj"] = import_time_str2
-                # 采集工作站上原文件相对路径
-                file_info["ccwz"] = ""
-                # 采集工作站上原文件本机存储路径
-                file_info["wlwz"] = ""
-                # HTTP访问路径
+                # 15.采集工作站上原文件相对路径
+                file_info["ccwz"] = "\\Workstation\\1.mp4"
+                # 16.采集工作站上原文件本机存储路径
+                file_info["wlwz"] = "D:\\Workstation\\1.mp4"
+                # 17.HTTP访问路径
                 file_info["bfwz"] = ""
-                # 存储服务器
+                # 18.存储服务器
                 file_info["ccfwq"] = ""
-                # 采集工作站上缩略图存放的相对路径
+                # 19.采集工作站上缩略图存放的相对路径
                 file_info["sltxdwz"] = ""
 
+                print json.dumps(file_info)
                 file_infos.append(file_info)
+                #time.sleep(1)
 
         # 发送请求信息
         url_base = "http://" + self.gateway_ip + ":" + self.gateway_port + \
@@ -279,6 +286,8 @@ class GxxGmWSSimulator:
         post_header["Content-Type"] = "application/json"
         post_header["Accept"] = "application/json"
 
+        # 这里目前会返回500
+        print json.dumps(file_infos)
         response = requests.post(url=url, data=json.dumps(file_infos), headers=post_header)
 
         return 0
