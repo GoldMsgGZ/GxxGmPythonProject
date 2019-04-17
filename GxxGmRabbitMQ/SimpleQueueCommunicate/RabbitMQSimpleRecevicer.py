@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # encoding=utf8
 
+# 此项目使用了第三方库pika，这里需要在终端输入：pip install pika 进行安装
+
 
 import pika
 
