@@ -15,21 +15,16 @@ connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1', 5672
 channel = connection.channel()
 
 # 发送消息类型为direct
-channel.exchange_declare(exchange='direct_logs', exchange_type='direct')
+channel.exchange_declare(exchange='topic_logs', exchange_type='topic')
 
-severity = 'info'
+# 根据参数设置路由key
+routing_key = sys.argv[1] if len(sys.argv) > 1 else 'anonymous.info'
 
 while True:
     message = ' '.join(sys.argv[1:]) or "Hello World ! %s" % time.time()
-    channel.basic_publish(exchange="direct_logs", routing_key=severity, body=message)
+    channel.basic_publish(exchange="topic_logs", routing_key=routing_key, body=message)
     time.sleep(1)
-    print ("Send %r:%r" % (severity, message))
+    print ("Send %r:%r" % (routing_key, message))
 
 connection.close()
-
-
-
-
-
-
 
