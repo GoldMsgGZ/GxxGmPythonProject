@@ -7,7 +7,8 @@ import pika
 import time
 
 # 生成凭证，创建连接
-credentials = pika.PlainCredentials('login', 'login')
+#credentials = pika.PlainCredentials('login', 'login')
+credentials = pika.PlainCredentials('guest', 'CE4DQ6BIb/BVMN9scFyLtA==')
 connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1', 5672, '/', credentials))
 
 # 创建通道

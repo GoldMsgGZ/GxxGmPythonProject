@@ -25,7 +25,7 @@ if not binding_keys:
     sys.exit(1)
 
 for binding_key in binding_keys:
-    channel.queue_bind(exchange='topic_logs', queue=queue_name, routing_key=binding_keys)
+    channel.queue_bind(exchange='topic_logs', queue=queue_name, routing_key=binding_key)
 
 print(' [*] Waiting for logs. To exit press CTRL+C')
 
