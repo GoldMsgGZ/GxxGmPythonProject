@@ -2,15 +2,31 @@
 # -*- coding: utf-8 -*-
 # encoding=utf8
 
-from kombu import Connection, Exchange, Queue
+"""
+Example that sends a single message and exits using the simple interface.
+You can use `simple_receive.py` (or `complete_receive.py`) to receive the
+message sent.
+"""
+from __future__ import absolute_import, unicode_literals
 
-media_exchange = Exchange('media', 'direct', durable=True)
-video_queue = Queue('video', exchange=media_exchange, routing_key='video')
+from kombu import Connection
 
-with Connection('amqp://admin:admin@localhost//', login_method='AMQPLAIN') as conn:
+#: Create connection
+#: If hostname, userid, password and virtual_host is not specified
+#: the values below are the default, but listed here so it can
+#: be easily changed.
+with Connection('amqp://admin:guest@localhost:5672//') as conn:
 
-    #conn.connect()
+    #: SimpleQueue mimics the interface of the Python Queue module.
+    #: First argument can either be a queue name or a kombu.Queue object.
+    #: If a name, then the queue will be declared with the name as the queue
+    #: name, exchange name and routing key.
+    with conn.SimpleQueue('kombu_demo') as queue:
+        queue.put({'hello': 'world'}, serializer='json', compression='zlib')
 
-    # 生产
-    producer = conn.Producer(serializer='json')
-    producer.publish({'name': '/tmp/local1.avi', 'size': 1301013}, exchange=media_exchange, routing_key='video', declare=[video_queue])
+
+#####
+# If you don't use the with statement, you must always
+# remember to close objects.
+#   queue.close()
+#   connection.close()
