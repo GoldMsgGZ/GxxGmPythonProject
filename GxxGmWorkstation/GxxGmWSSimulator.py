@@ -31,25 +31,14 @@ GATEWAY_PORT = "6801"
 DSJ_GBCODE = "44030358901511317526"
 
 # 工作频率，单位：秒
+# 心跳频率
 HEARTBEAT_RATE = 5
+# 子部门查询频率
 QUERY_SUBORG_RATE = 5
+# 用户信息查询频率
 QUERY_USER_RATE = 5
+# 文件信息上报频率
 PUT_FILES_RATE = 10
-
-# 测试当前计算机的CPU占用率和内存占用率
-#ram = psutil.virtual_memory().percent
-#cpu = psutil.cpu_percent(None)
-#print ram
-#print cpu
-
-# 测试格式化字符串
-# print "%07d" % 1
-#
-# url_base = "http://" + "127.0.0.1" + ":" + "6802" + \
-#                  "/openapi/workstation/v3/wsinfo/heartbeat?gzz_xh=%s&authkey=%s&domain=%s"
-# url = url_base % ("111222333", "auth_key", "domain")
-# print url
-
 
 
 class GxxGmWSSimulator:
@@ -57,7 +46,7 @@ class GxxGmWSSimulator:
     # 模拟器应该实现以下功能：
     # 1.发送心跳
     # 2.查询组织架构与用户信息
-    # 3.
+    # 3.上报文件信息
 
     def __init__(self):
         # 初始化几个成员变量

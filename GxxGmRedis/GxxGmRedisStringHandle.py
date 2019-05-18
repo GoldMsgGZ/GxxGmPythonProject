@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # encoding=utf8
 
+# 本例会使用redis组件，需要执行 pip install redis 进行安装
+
 import redis
 
 REDIS_HOST = "127.0.0.1"
