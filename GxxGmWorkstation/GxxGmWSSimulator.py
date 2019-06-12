@@ -5,26 +5,30 @@
 # 本例会读取CPU、内存利用率，需要安装psutil，安装命令为：pip install psutil
 # 本例会发送HTTP请求，需要安装request，安装命令为：pip install requests
 
+
 import psutil
 import requests
 import time
 import json
 import datetime
+from threadpool import ThreadPool, makeRequests
 
 
 ###################################################################
 # 这里是模拟器配置信息
-INSTANCE_COUNT = 1
+
+INSTANCE_COUNT = 500
 
 # 工作站信息
-WORKSTATION_GBCODE = "44030358901281317526"
+WORKSTATION_GBCODE_PRE = "4401040190128"
+WORKSTATION_GBCODE_START = 1508599
 WORKSTATION_IP = "10.10.16.59"
 WORKSTATION_VERSION = "3.4.5"
 WORKSTATION_AUTHKEY = "GM3019013044030358901281317526"
 WORKSTATION_DOMAIN = "44030300"
 
 # 网关信息
-GATEWAY_IP = "192.168.56.97"
+GATEWAY_IP = "192.168.55.10"
 GATEWAY_PORT = "6801"
 
 # 接入的执法仪信息
@@ -32,11 +36,11 @@ DSJ_GBCODE = "44030358901511317526"
 
 # 工作频率，单位：秒
 # 心跳频率
-HEARTBEAT_RATE = 5
+HEARTBEAT_RATE = 1
 # 子部门查询频率
-QUERY_SUBORG_RATE = 5
+QUERY_SUBORG_RATE = 1
 # 用户信息查询频率
-QUERY_USER_RATE = 5
+QUERY_USER_RATE = 1
 # 文件信息上报频率
 PUT_FILES_RATE = 10
 
@@ -79,8 +83,8 @@ class GxxGmWSSimulator:
         self.gateway_port = gateway_port
 
         # 首先发送一波请求，验证连通性
-        url = "http://" + self.gateway_ip + ":" + self.gateway_port + "/openapi/workstation/v3/ping"
-        response = requests.get(url)
+        url = "https://" + self.gateway_ip + ":" + self.gateway_port + "/openapi/workstation/v3/ping"
+        response = requests.get(url, verify=False)
 
         if response.status_code != 200:
             err_code = response.status_code
@@ -110,7 +114,7 @@ class GxxGmWSSimulator:
         heart_beat["version"] = self.version
 
         # 发送心跳，这里会获得当前执法仪所属部门
-        url_base = "http://" + self.gateway_ip + ":" + self.gateway_port + \
+        url_base = "https://" + self.gateway_ip + ":" + self.gateway_port + \
                  "/openapi/workstation/v3/wsinfo/heartbeat?gzz_xh=%s&authkey=%s&domain=%s"
         url = url_base % (self.device_code, self.auth_key, self.domain)
 
@@ -118,7 +122,7 @@ class GxxGmWSSimulator:
         post_header["Content-Type"] = "application/json"
         post_header["Accept"] = "application/json"
 
-        response = requests.post(url=url, data=json.dumps(heart_beat), headers=post_header)
+        response = requests.post(url=url, data=json.dumps(heart_beat), headers=post_header, verify=False)
 
         print response.content
 
@@ -127,6 +131,7 @@ class GxxGmWSSimulator:
             content_json = json.loads(response.content)
             if content_json['code'] != 0:
                 err_code = content_json['code']
+                return err_code
         except ValueError:
             print "Get heartbeat info failed！"
             return -1
@@ -140,10 +145,10 @@ class GxxGmWSSimulator:
     def get_suborgs(self):
         # 获取子部门列表
 
-        url_base = "http://" + self.gateway_ip + ":" + self.gateway_port +\
+        url_base = "https://" + self.gateway_ip + ":" + self.gateway_port +\
                    "/openapi/workstation/v3/suborg?gzz_xh=%s&authkey=%s&domain=%s&sjbmbh=%s"
         url = url_base % (self.device_code, self.auth_key, self.domain, self.workstation_org_id)
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
 
         err_code = 0
         if response.status_code != 200:
@@ -156,6 +161,7 @@ class GxxGmWSSimulator:
             content_json = json.loads(response.content)
             if content_json['code'] != 0:
                 err_code = content_json['code']
+                return err_code
         except ValueError:
             print "Get sub orgs info failed！"
             return -1
@@ -168,10 +174,10 @@ class GxxGmWSSimulator:
     def get_users_info_org(self):
         # 获取指定部门下的直属用户列表
 
-        url_base = "http://" + self.gateway_ip + ":" + self.gateway_port + \
+        url_base = "https://" + self.gateway_ip + ":" + self.gateway_port + \
                    "/openapi/workstation/v3/userinfo?gzz_xh=%s&authkey=%s&domain=%s&bmbh=%s"
         url = url_base % (self.device_code, self.auth_key, self.domain, self.workstation_org_id)
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
 
         err_code = 0
         if response.status_code != 200:
@@ -187,6 +193,7 @@ class GxxGmWSSimulator:
             content_json = json.loads(response.content)
             if content_json['code'] != 0:
                 err_code = content_json['code']
+                return err_code
         except ValueError:
             print "Get user info failed！"
             return -1
@@ -267,7 +274,7 @@ class GxxGmWSSimulator:
                 #time.sleep(1)
 
         # 发送请求信息
-        url_base = "http://" + self.gateway_ip + ":" + self.gateway_port + \
+        url_base = "https://" + self.gateway_ip + ":" + self.gateway_port + \
                    "/openapi/workstation/v3/wsinfo/heartbeat?gzz_xh=%s&authkey=%s&domain=%s"
         url = url_base % (self.device_code, self.auth_key, self.domain)
 
@@ -277,16 +284,52 @@ class GxxGmWSSimulator:
 
         # 这里目前会返回500
         print json.dumps(file_infos)
-        response = requests.post(url=url, data=json.dumps(file_infos), headers=post_header)
+        response = requests.post(url=url, data=json.dumps(file_infos), headers=post_header, verify=False)
 
         return 0
 
 
-if __name__ == "__main__":
-    print "本地测试采集工作站"
+    def run(self):
+        # 采集站开始运行
+        heartbeat_count = HEARTBEAT_RATE
+        query_suborg_count = QUERY_SUBORG_RATE
+        query_user_count = QUERY_USER_RATE
+        put_files_count = PUT_FILES_RATE
 
+        while True:
+
+            # 发送心跳
+            if heartbeat_count == HEARTBEAT_RATE:
+                self.send_heartbeat()
+                heartbeat_count = 0
+
+            # 查询子部门
+            if query_suborg_count == QUERY_SUBORG_RATE:
+                self.get_suborgs()
+                query_suborg_count = 0
+
+            # 查询子部门用户
+            if query_user_count == QUERY_USER_RATE:
+                self.get_users_info_org()
+                query_user_count = 0
+
+            # # 创建一个线程，等待上传重要文件
+            # # 上传文件信息
+            # if put_files_count == PUT_FILES_RATE:
+            #     self.workstation.put_file_info()
+            #     put_files_count = 0
+
+            time.sleep(1)
+
+            heartbeat_count += 1
+            query_suborg_count += 1
+            query_user_count += 1
+            put_files_count += 1
+
+
+def workstation_func(gbcode):
     workstation = GxxGmWSSimulator()
-    err_code = workstation.startup(device_code=WORKSTATION_GBCODE, auth_key=WORKSTATION_AUTHKEY,
+    err_code = workstation.startup(device_code=gbcode, auth_key=WORKSTATION_AUTHKEY,
                                    domain=WORKSTATION_DOMAIN, ip=WORKSTATION_IP, version=WORKSTATION_VERSION,
                                    dsj_code=DSJ_GBCODE, gateway_ip=GATEWAY_IP, gateway_port=GATEWAY_PORT)
 
@@ -294,38 +337,26 @@ if __name__ == "__main__":
         print "未连通采集站接入网关..."
         exit()
 
-    heartbeat_count = HEARTBEAT_RATE
-    query_suborg_count = QUERY_SUBORG_RATE
-    query_user_count = QUERY_USER_RATE
-    put_files_count = PUT_FILES_RATE
+    workstation.run()
 
-    while True:
+if __name__ == "__main__":
+    print "本地测试采集工作站"
 
-        # 发送心跳
-        if heartbeat_count == HEARTBEAT_RATE:
-            workstation.send_heartbeat()
-            heartbeat_count = 0
+    # 创建线程池
+    device_list = list()
+    for index in range(INSTANCE_COUNT):
+        # 根据模拟器实例个数进来生成对应的采集站国标编码
+        gbcode_id_number = "%07d" % (WORKSTATION_GBCODE_START + index)
+        gbcode = WORKSTATION_GBCODE_PRE + gbcode_id_number
+        device_list.append(gbcode)
+        print ("生成设备编码：" + gbcode)
 
-        # 查询子部门
-        if query_suborg_count == QUERY_SUBORG_RATE:
-            workstation.get_suborgs()
-            query_suborg_count = 0
+    pool = ThreadPool(INSTANCE_COUNT)
+    threadpool_requests = makeRequests(workstation_func, device_list)
+    [pool.putRequest(req) for req in threadpool_requests]
+    pool.wait()
 
-        # 查询子部门用户
-        if query_user_count == QUERY_USER_RATE:
-            workstation.get_users_info_org()
-            query_user_count = 0
 
-        # 创建一个线程，等待上传重要文件
-        # 上传文件信息
-        if put_files_count == PUT_FILES_RATE:
-            workstation.put_file_info()
-            put_files_count = 0
 
-        time.sleep(1)
 
-        heartbeat_count += 1
-        query_suborg_count += 1
-        query_user_count += 1
-        put_files_count += 1
 
