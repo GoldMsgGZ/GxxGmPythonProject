@@ -21,7 +21,7 @@ INSTANCE_COUNT = 500
 
 # 工作站信息
 WORKSTATION_GBCODE_PRE = "4401040190128"
-WORKSTATION_GBCODE_START = 1508599
+WORKSTATION_GBCODE_START = 1600500
 WORKSTATION_IP = "10.10.16.59"
 WORKSTATION_VERSION = "3.4.5"
 WORKSTATION_AUTHKEY = "GM3019013044030358901281317526"
@@ -122,7 +122,7 @@ class GxxGmWSSimulator:
         post_header["Content-Type"] = "application/json"
         post_header["Accept"] = "application/json"
 
-        response = requests.post(url=url, data=json.dumps(heart_beat), headers=post_header, verify=False)
+        response = requests.post(url=url, data=json.dumps(heart_beat), headers=post_header, verify=False, timeout=0.01)
 
         print response.content
 
@@ -319,7 +319,7 @@ class GxxGmWSSimulator:
             #     self.workstation.put_file_info()
             #     put_files_count = 0
 
-            time.sleep(1)
+            #time.sleep(1)
 
             heartbeat_count += 1
             query_suborg_count += 1
