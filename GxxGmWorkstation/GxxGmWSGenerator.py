@@ -41,7 +41,7 @@ for index in range(INSTANCE_COUNT):
     take_time_str2 = take_time.strftime('%Y-%m-%d %H:%M:%S')
 
     rid = "RID-FAKE" + gbcode_str + take_time_str + gbcode_str
-    address = "guangzhou"
+    address = "guangzho"
     admin = "admin"
     auth_key = "1"
     default_expiredays = 365

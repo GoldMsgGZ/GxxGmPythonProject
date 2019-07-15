@@ -115,7 +115,7 @@ class GxxGmWSSimulator:
         heart_beat["qizt"] = "1"
         heart_beat["cczrl"] = 4 * 1024 * 1024
         heart_beat["syzrl"] = 500 * 1024
-        heart_beat["cpu"] = int(cpu)
+        heart_beat["cp"] = int(cpu)
         heart_beat["ram"] = int(ram)
         heart_beat["raid_zt"] = 101
         heart_beat["bjlx"] = 0

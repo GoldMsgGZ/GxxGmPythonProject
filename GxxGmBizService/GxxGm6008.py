@@ -15,7 +15,7 @@ import MySQLdb
 
 
 # Excel路径，尽量使用英文路径
-EXCEL_PATH = u"E:\\脱敏版.xls"
+EXCEL_PATH = "E:\\脱敏版.xls"
 
 # MySQL参数
 MYSQL_HOST = "localhost"
