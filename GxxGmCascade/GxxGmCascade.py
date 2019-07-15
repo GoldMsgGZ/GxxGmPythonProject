@@ -8,10 +8,17 @@
 
 ###########################################################################
 # 首先是配置信息
+import MySQLdb
 import datetime
 import json
 import random
 import time
+
+MYSQL_HOST = "localhost"
+MYSQL_PORT = 3306
+MYSQL_USERNAME = "root"
+MYSQL_PASSWORD = "video"
+MYSQL_DBNAME = "auth-cas"
 
 DOMAIN = "123"
 AUTHKEY = "1234567"
@@ -444,6 +451,18 @@ def get_current_datetime():
     current_time_str = current_time.strftime('%Y%m%d%H%M%S')
     current_time_str2 = current_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     return now_time
+
+
+def init_data_from_system():
+    # 从系统中初始化一些数据
+    # 主要是组织架构部门信息，还有用户信息
+    db = MySQLdb.connect(host=MYSQL_HOST, user=MYSQL_USERNAME, passwd=MYSQL_PASSWORD, db=MYSQL_DBNAME)
+    cursor = db.cursor()  # 创建一个游标对象
+    # 搜索所有部门
+
+    # 搜索所有用户
+
+    # 将用户
 
 
 class GxxGmPlatform:
