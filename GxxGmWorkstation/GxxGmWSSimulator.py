@@ -6,6 +6,14 @@
 # 本例会发送HTTP请求，需要安装request，安装命令为：pip install requests
 
 
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 import psutil
 import requests
 import time
@@ -124,7 +132,7 @@ class GxxGmWSSimulator:
 
         response = requests.post(url=url, data=json.dumps(heart_beat), headers=post_header, verify=False, timeout=0.01)
 
-        print response.content
+        print(response.content)
 
         err_code = 0
         try:
@@ -133,7 +141,7 @@ class GxxGmWSSimulator:
                 err_code = content_json['code']
                 return err_code
         except ValueError:
-            print "Get heartbeat info failed！"
+            print("Get heartbeat info failed！")
             return -1
 
         # 解析数据
@@ -163,7 +171,7 @@ class GxxGmWSSimulator:
                 err_code = content_json['code']
                 return err_code
         except ValueError:
-            print "Get sub orgs info failed！"
+            print("Get sub orgs info failed！")
             return -1
 
             # 解析数据
@@ -186,7 +194,7 @@ class GxxGmWSSimulator:
         else:
             err_code = 0
 
-        print response.content
+        print(response.content)
 
         # 保存当前采集站所在部门所有民警列表
         try:
@@ -195,7 +203,7 @@ class GxxGmWSSimulator:
                 err_code = content_json['code']
                 return err_code
         except ValueError:
-            print "Get user info failed！"
+            print("Get user info failed！")
             return -1
 
         # 解析数据
@@ -269,7 +277,7 @@ class GxxGmWSSimulator:
                 # 19.采集工作站上缩略图存放的相对路径
                 file_info["sltxdwz"] = ""
 
-                print json.dumps(file_info)
+                print(json.dumps(file_info))
                 file_infos.append(file_info)
                 #time.sleep(1)
 
@@ -283,7 +291,7 @@ class GxxGmWSSimulator:
         post_header["Accept"] = "application/json"
 
         # 这里目前会返回500
-        print json.dumps(file_infos)
+        print(json.dumps(file_infos))
         response = requests.post(url=url, data=json.dumps(file_infos), headers=post_header, verify=False)
 
         return 0
@@ -319,7 +327,8 @@ class GxxGmWSSimulator:
             #     self.workstation.put_file_info()
             #     put_files_count = 0
 
-            #time.sleep(1)
+            # 睡眠1毫秒
+            time.sleep(0.001)
 
             heartbeat_count += 1
             query_suborg_count += 1
@@ -334,13 +343,13 @@ def workstation_func(gbcode):
                                    dsj_code=DSJ_GBCODE, gateway_ip=GATEWAY_IP, gateway_port=GATEWAY_PORT)
 
     if err_code != 0:
-        print "未连通采集站接入网关..."
+        print("未连通采集站接入网关...")
         exit()
 
     workstation.run()
 
 if __name__ == "__main__":
-    print "本地测试采集工作站"
+    print("本地测试采集工作站")
 
     # 创建线程池
     device_list = list()
