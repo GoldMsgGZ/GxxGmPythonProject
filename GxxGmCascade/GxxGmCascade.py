@@ -28,6 +28,7 @@ MYSQL_DBNAME = "auth-cas"
 DOMAIN = "53000000"
 AUTHKEY = "00000000902001100763"
 
+ITEM_COUNT = 100
 
 # 警情信息上报格式
 # {
@@ -577,7 +578,7 @@ class GxxGmPlatform:
         handle_alarm_situation_json = dict()
         handle_alarm_situation_json["cj"] = list()
 
-        for index in range(1000):
+        for index in range(ITEM_COUNT):
 
             # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
             org_code, org_name, police_code, police_name = get_org_and_police(self.orgs)
@@ -589,10 +590,10 @@ class GxxGmPlatform:
 
             # 构建接警信息
             receive_alarm = dict()
-            receive_alarm["bjfs"] = get_alarm_type()                        # 报警方式
-            receive_alarm["bjnr"] = alarm_situation_info                    # 报警内容
-            receive_alarm["bjrdh"] = get_phone_nunber()                     # 报警人电话
-            receive_alarm["bjrxb"] = random.choice(["男", "女"])             # 报警人性别
+            receive_alarm["bjfs"] = get_alarm_type()                                # 报警方式
+            receive_alarm["bjnr"] = alarm_situation_info                            # 报警内容
+            receive_alarm["bjrdh"] = get_phone_nunber()                             # 报警人电话
+            receive_alarm["bjrxb"] = random.choice(["男", "女"])                     # 报警人性别
             receive_alarm["bjrxm"] = get_person_name()                              # 报警人姓名
             receive_alarm["bjsj"] = get_current_datetime()                          # 报警事件
             receive_alarm["djsj"] = get_current_datetime()
@@ -601,13 +602,13 @@ class GxxGmPlatform:
             receive_alarm["jjdwmc"] = org_name
             receive_alarm["jjr"] = police_code                                      # 接警人
             receive_alarm["jjrmc"] = police_name                                    # 接警人名称
-            receive_alarm["jqbh"] = "JQ" + org_code + str(get_current_datetime())                  #
-            receive_alarm["jqlb"] = alarm_situation_id                      #
-            receive_alarm["jqlbmc"] = alarm_situation_type                  #
-            receive_alarm["jqmc"] = alarm_situation_info                    #
-            receive_alarm["sfdd"] = address                                 #
-            receive_alarm["sfsj"] = get_current_datetime()                  #
-            receive_alarm["wj"] = list()                                    #
+            receive_alarm["jqbh"] = "JQ" + org_code + str(get_current_datetime())   #
+            receive_alarm["jqlb"] = alarm_situation_id                              #
+            receive_alarm["jqlbmc"] = alarm_situation_type                          #
+            receive_alarm["jqmc"] = alarm_situation_info                            #
+            receive_alarm["sfdd"] = address                                         #
+            receive_alarm["sfsj"] = get_current_datetime()                          #
+            receive_alarm["wj"] = list()                                            #
             receive_alarm_json["jj"].append(receive_alarm)
 
             # 生成警情信息
@@ -625,7 +626,7 @@ class GxxGmPlatform:
             handle_alarm_situation["mjyj"] = ""
             handle_alarm_situation_json["cj"].append(handle_alarm_situation)
 
-
+            time.sleep(0.001)
 
         # 发送接警信息
         post_header = dict()
@@ -653,6 +654,9 @@ class GxxGmPlatform:
         except ValueError:
             print(u"发送接警信息失败！")
             return -1
+
+        # 等待1秒，确保接警信息已经在数据库存在
+        time.sleep(1)
 
         # print (json.dumps(handle_alarm_situation_json))
         OPENAPI_HANDLEALARMSITUATION_URL = "http://192.168.55.156:6803/openapi/levam/platform/upload/hs/basic/info?domain=" + DOMAIN + "&authkey=" + AUTHKEY
@@ -684,4 +688,7 @@ if __name__ == "__main__":
     platform = GxxGmPlatform()
 
     while True:
+        # 生成警情、发送警情信息
         platform.send_alarm_situations()
+
+        # 生成并发送案件信息
