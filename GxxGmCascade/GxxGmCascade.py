@@ -8,21 +8,26 @@
 
 ###########################################################################
 # 首先是配置信息
+import traceback
+
 import MySQLdb
 import datetime
 import json
 import random
 import time
 
-MYSQL_HOST = "localhost"
+import requests
+
+MYSQL_HOST = "192.168.55.156"
 MYSQL_PORT = 3306
 MYSQL_USERNAME = "root"
-MYSQL_PASSWORD = "video"
+MYSQL_PASSWORD = "mysql"
 MYSQL_DBNAME = "auth-cas"
 
-DOMAIN = "123"
-AUTHKEY = "1234567"
-OPENAPI_URL = "http://192.168.55.156:6803/openapi/levam/platform/upload/hs/basic/info?domain=%s&authkey=%s"
+# DOMAIN 和 AUTHKEY 需要在平台级联功能处增加级联平台
+DOMAIN = "53000000"
+AUTHKEY = "00000000902001100763"
+
 
 # 警情信息上报格式
 # {
@@ -456,90 +461,227 @@ def get_current_datetime():
 def init_data_from_system():
     # 从系统中初始化一些数据
     # 主要是组织架构部门信息，还有用户信息
-    db = MySQLdb.connect(host=MYSQL_HOST, user=MYSQL_USERNAME, passwd=MYSQL_PASSWORD, db=MYSQL_DBNAME)
+    db = MySQLdb.connect(host=MYSQL_HOST, user=MYSQL_USERNAME, passwd=MYSQL_PASSWORD, db=MYSQL_DBNAME, charset="utf8")
     cursor = db.cursor()  # 创建一个游标对象
     # 搜索所有部门
+    sql = "SELECT * FROM `uap_tb_gmvcs_organize`;"
 
-    # 搜索所有用户
+    org_infos = list()
+    try:
+        # 执行SQL语句
+        cursor.execute(sql)
+        # 获取所有记录列表
+        results = cursor.fetchall()
+        for row in results:
+            org_info = dict()
+            org_info["org_id"] = row[0]
+            org_info["duty_range"] = row[1]
+            org_info["extend"] = row[2]
+            org_info["order_no"] = int(row[3])
+            org_info["org_code"] = row[4]
+            org_info["org_name"] = row[5]
+            org_info["path"] = row[6]
+            org_info["update_time"] = str(row[7])
+            org_info["parent"] = row[8]
+            org_info["source"] = row[9]
 
-    # 将用户
+            # 搜索部门所有用户
+            sql2 = "SELECT * FROM `uap_tb_gmvcs_user` WHERE org_id=\"%s\";" % (org_info["org_id"].encode("utf8"))
+            user_infos = list()
+
+            # 执行SQL语句
+            cursor.execute(sql2)
+            # 获取所有记录列表
+            results = cursor.fetchall()
+            for row in results:
+                user_info = dict()
+                user_info["uid"] = row[0]
+                user_info["account"] = row[1]
+                user_info["admin"] = row[2]
+                user_info["create_time"] = row[3]
+                user_info["create_user"] = row[4]
+                user_info["email"] = row[5]
+                user_info["enable"] = row[6]
+                user_info["extend"] = row[7]
+                user_info["gender"] = row[8]
+                user_info["id_card"] = row[9]
+                user_info["is_deleted"] = row[10]
+                user_info["last_login_time"] = row[11]
+                user_info["login_status"] = row[12]
+                user_info["mobel_phone"] = row[13]
+                user_info["password"] = row[14]
+                user_info["repeat_login"] = row[15]
+                user_info["spell_abbr"] = row[16]
+                user_info["spell_full"] = row[17]
+                user_info["update_time"] = row[18]
+                user_info["user_code"] = row[19]
+                user_info["user_name"] = row[20]
+                user_info["user_type"] = row[21]
+                user_info["job_type"] = row[22]
+                user_info["org_id"] = row[23]
+                user_info["police_type"] = row[24]
+                user_info["last_login_ip"] = row[25]
+                user_info["source"] = row[26]
+                user_info["login_fail_num"] = row[27]
+                user_info["is_black_role"] = row[28]
+                user_info["pwd_valid_date"] = row[29]
+                user_info["pwd_expire_date"] = row[30]
+                user_info["login_limit"] = row[31]
+                user_info["ip_limit"] = row[32]
+                user_info["account_valid_days"] = row[33]
+                user_info["account_expire_date"] = row[34]
+                user_info["is_valid"] = row[35]
+
+                user_infos.append(user_info)
+                # print (user_info)
+
+            org_info["users"] = user_infos
+            org_infos.append(org_info)
+            # print (org_info)
+
+    except Exception:
+        traceback.print_exc()
+
+    # 关闭数据库，避免内存泄漏
+    db.close()
+
+    return org_infos
+
+
+def get_org_and_police(org_infos):
+    # 随机获取接处警部门以及民警
+    while True:
+        org_info = random.choice(org_infos)
+        if len(org_info["users"]) == 0:
+            continue
+
+        user_info = random.choice(org_info["users"])
+        break
+
+    return org_info["org_code"].encode("utf8"), org_info["org_name"].encode("utf8"), user_info["user_code"].encode("utf8"), user_info["user_name"].encode("utf8")
 
 
 class GxxGmPlatform:
 
     def __init__(self):
         self.platform_id="0001" # 平台ID
+        self.orgs = init_data_from_system()
 
     def send_alarm_situations(self):
         # 发送警情信息
-
-        # 先发接警信息
-        # 再发警情信息
-
         # 首先生成接警信息
-        #             "bjfs":"",  # 报警方式
-        #             "bjnr":"", # 报警内容
-        #             "bjrdh":"", # 报警人电话
-        #             "bjrxb":"", # 报警人性别
-        #             "bjrxm":"", # 报警人姓名
-        #             "bjsj":"2019-07-13T15:52:04.265Z",
-        #             "djsj":"2019-07-13T15:52:04.265Z",
-        #             "gxsj":"2019-07-13T15:52:04.265Z",
-        #             "jjdw":"",
-        #             "jjr":"", # 接警人
-        #             "jjrmc":"", # 接警人名称
-        #             "jqbh":"", # 警情编号
-        #             "jqlb":"", # 警情类别
-        #             "jqlbmc":"", # 警情类别名称
-        #             "jqmc":"", # 警情名称
-        #             "sfdd":"", # 事发地点
-        #             "sfsj":"2019-07-13T15:52:04.265Z", # 事发时间
-        #             "wj":[
-        #                 ""
-        #             ] # 文件
-        alarm_situation_id, alarm_situation_type = get_alarm_situation_type()
-        province_name, province_code, city_name, city_code, county_name, county_code = get_random_division()
-        alarm_situation_info, address = get_alarm_content(province_name, city_name, county_name, road, alarm_situation_type)
-        receive_alarm = dict()
-        receive_alarm["bjfs"] = get_alarm_type()                        # 报警方式
-        receive_alarm["bjnr"] = alarm_situation_info                    # 报警内容
-        receive_alarm["bjrdh"] = get_phone_nunber()                     # 报警人电话
-        receive_alarm["bjrxb"] = random.choice(["男", "女"])             # 报警人性别
-        receive_alarm["bjrxm"] = get_person_name()                      # 报警人姓名
-        receive_alarm["bjsj"] = get_current_datetime()                  # 报警事件
-        receive_alarm["djsj"] = get_current_datetime()
-        receive_alarm["gxsj"] = get_current_datetime()
-        receive_alarm["jjdw"] = county_code                             # 接警单位
-        receive_alarm["jjdwmc"] = county_name + "分局"
-        receive_alarm["jjr"] = "000110"                                 # 接警人
-        receive_alarm["jjrmc"] = "接警专员"                              # 接警人名称
-        receive_alarm["jqbh"] = "JQ" + county_code + "000000" + str(get_current_datetime())                  #
-        receive_alarm["jqlb"] = alarm_situation_id                      #
-        receive_alarm["jqlbmc"] = alarm_situation_type                  #
-        receive_alarm["jqmc"] = alarm_situation_info                    #
-        receive_alarm["sfdd"] = address                                 #
-        receive_alarm["sfsj"] = get_current_datetime()                  #
-        receive_alarm["wj"] = list()                                    #
 
         receive_alarm_json = dict()
         receive_alarm_json["jj"] = list()
-        receive_alarm_json["jj"].append(receive_alarm)
 
-        print (json.dumps(receive_alarm_json))
-        # 首先生成警情信息
-        alarm_situation = dict()
-        # 处警单号
-        # 处警单位
-        # 处警单位名称
-        # 处警人
-        # 处警人名称
-        # 处警时间
-        # 到达现场时间
-        #
-        # 更新时间
-        # 警情编号
-        # 民警***
+        handle_alarm_situation_json = dict()
+        handle_alarm_situation_json["cj"] = list()
+
+        for index in range(1000):
+
+            # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
+            org_code, org_name, police_code, police_name = get_org_and_police(self.orgs)
+            # 生成警情类型
+            alarm_situation_id, alarm_situation_type = get_alarm_situation_type()
+            # 生成案发地点和警情信息
+            province_name, province_code, city_name, city_code, county_name, county_code = get_random_division()
+            alarm_situation_info, address = get_alarm_content(province_name, city_name, county_name, road, alarm_situation_type)
+
+            # 构建接警信息
+            receive_alarm = dict()
+            receive_alarm["bjfs"] = get_alarm_type()                        # 报警方式
+            receive_alarm["bjnr"] = alarm_situation_info                    # 报警内容
+            receive_alarm["bjrdh"] = get_phone_nunber()                     # 报警人电话
+            receive_alarm["bjrxb"] = random.choice(["男", "女"])             # 报警人性别
+            receive_alarm["bjrxm"] = get_person_name()                              # 报警人姓名
+            receive_alarm["bjsj"] = get_current_datetime()                          # 报警事件
+            receive_alarm["djsj"] = get_current_datetime()
+            receive_alarm["gxsj"] = get_current_datetime()
+            receive_alarm["jjdw"] = org_code                                        # 接警单位
+            receive_alarm["jjdwmc"] = org_name
+            receive_alarm["jjr"] = police_code                                      # 接警人
+            receive_alarm["jjrmc"] = police_name                                    # 接警人名称
+            receive_alarm["jqbh"] = "JQ" + org_code + str(get_current_datetime())                  #
+            receive_alarm["jqlb"] = alarm_situation_id                      #
+            receive_alarm["jqlbmc"] = alarm_situation_type                  #
+            receive_alarm["jqmc"] = alarm_situation_info                    #
+            receive_alarm["sfdd"] = address                                 #
+            receive_alarm["sfsj"] = get_current_datetime()                  #
+            receive_alarm["wj"] = list()                                    #
+            receive_alarm_json["jj"].append(receive_alarm)
+
+            # 生成警情信息
+            handle_alarm_situation = dict()
+            handle_alarm_situation["cjdh"] = "CJ" + org_code + str(get_current_datetime())
+            handle_alarm_situation["cjdw"] = org_code
+            handle_alarm_situation["cjdwmc"] = org_name
+            handle_alarm_situation["cjr"] = police_code
+            handle_alarm_situation["cjrmc"] = police_name
+            handle_alarm_situation["cjsj"] = get_current_datetime()
+            handle_alarm_situation["ddxcsj"] = get_current_datetime()
+            handle_alarm_situation["djsj"] = get_current_datetime()
+            handle_alarm_situation["gxsj"] = get_current_datetime()
+            handle_alarm_situation["jqbh"] = receive_alarm["jqbh"]
+            handle_alarm_situation["mjyj"] = ""
+            handle_alarm_situation_json["cj"].append(handle_alarm_situation)
+
+
+
+        # 发送接警信息
+        post_header = dict()
+        post_header["Content-Type"] = "application/json"
+        post_header["Accept"] = "application/json"
+
+        # 这里目前会返回500
+        # print (json.dumps(receive_alarm_json))
+        OPENAPI_RECEIVEALARMSITUATION_URL = "http://192.168.55.156:6803/openapi/levam/platform/upload/ps/basic/info?domain=" + DOMAIN + "&authkey=" + AUTHKEY
+        response = requests.post(url=OPENAPI_RECEIVEALARMSITUATION_URL, data=json.dumps(receive_alarm_json),
+                                 headers=post_header)
+        err_code = 0
+        if response.status_code != 200:
+            err_code = response.status_code
+            return err_code
+        else:
+            err_code = 0
+
+        try:
+            content_json = json.loads(response.content)
+            if content_json['code'] != 0:
+                err_code = content_json['code']
+                print(u"发送接警信息失败！" + str(err_code))
+                return err_code
+        except ValueError:
+            print(u"发送接警信息失败！")
+            return -1
+
+        # print (json.dumps(handle_alarm_situation_json))
+        OPENAPI_HANDLEALARMSITUATION_URL = "http://192.168.55.156:6803/openapi/levam/platform/upload/hs/basic/info?domain=" + DOMAIN + "&authkey=" + AUTHKEY
+        response = requests.post(url=OPENAPI_HANDLEALARMSITUATION_URL, data=json.dumps(handle_alarm_situation_json),
+                                 headers=post_header)
+        err_code = 0
+        if response.status_code != 200:
+            err_code = response.status_code
+            return err_code
+        else:
+            err_code = 0
+
+        try:
+            content_json = json.loads(response.content)
+            if content_json['code'] != 0:
+                err_code = content_json['code']
+                print(u"发送处警信息失败！")
+                return err_code
+        except ValueError:
+            print(u"发送处警信息失败！")
+            return -1
+
+        return err_code
+
+
 
 if __name__ == "__main__":
+    init_data_from_system()
     platform = GxxGmPlatform()
-    platform.send_alarm_situations()
+
+    while True:
+        platform.send_alarm_situations()
