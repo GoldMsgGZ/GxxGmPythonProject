@@ -20,7 +20,7 @@ import GxxGmBaseData
 
 
 # DOMAIN 和 AUTHKEY 需要在平台级联功能处增加级联平台
-from GxxGmCascade import GxxGmGA
+import GxxGmGA
 
 DOMAIN = "53000000"
 AUTHKEY = "00000000902001100763"
@@ -80,11 +80,12 @@ class GxxGmPlatform:
 
     def __init__(self):
         self.platform_id="0001" # 平台ID
+        self.ga = GxxGmGA()
 
     def send_alarm_situations(self):
         # 发送警情信息
         # 首先生成接警信息
-        receive_alarm_json, handle_alarm_situation_json, case_info_json = GxxGmGA.generate_jq_aj(ITEM_COUNT)
+        receive_alarm_json, handle_alarm_situation_json, case_info_json = self.ga.generate_jq_aj(ITEM_COUNT)
 
         # 发送接警信息
         post_header = dict()
@@ -165,7 +166,7 @@ class GxxGmPlatform:
 
     def send_case(self):
         # 发送案件信息
-        case_info_json = GxxGmGA.generate_jq_aj(ITEM_COUNT)
+        case_info_json = self.ga.generate_jq_aj(ITEM_COUNT)
 
         post_header = dict()
         post_header["Content-Type"] = "application/json"
