@@ -11,6 +11,10 @@
 import random
 import time
 
+#from GxxGmCascade import GxxGmLEVAMdb
+import GxxGmLEVAMdb
+
+
 first_name = ["赵", "钱", "孙", "李", "周", "吴", "郑", "王", "冯", "陈", "褚", "卫", "蒋", "沈", "韩", "杨",
               "朱", "秦", "尤", "许", "何", "吕", "施", "张", "孔", "曹", "严", "华", "金", "魏", "陶", "姜",
               "戚", "谢", "邹", "喻", "柏", "水", "窦", "章", "云", "苏", "潘", "葛", "奚", "范", "彭", "郎",
@@ -260,9 +264,33 @@ road = ["鳌鱼岗四巷", "北环路", "北街路", "上十二巷", "柴栏田�
 phone_title = ["130", "131", "132", "133", "134", "135", "136",
                "137", "138", "139", "159", "169", "179", "189", "177"]
 
+
+#
+alarm_content = [
+    {"id": "0001", "type": "抢劫"},
+    {"id": "0002", "type": "盗窃"},
+    {"id": "0003", "type": "吸毒"},
+    {"id": "0004", "type": "打架"},
+    {"id": "0005", "type": "赌博"},
+    {"id": "0006", "type": "卖淫"},
+    {"id": "0007", "type": "嫖娼"},
+    {"id": "0008", "type": "诈骗"},
+    {"id": "0009", "type": "杀人"},
+    {"id": "0010", "type": "拐卖妇女儿童"},
+    {"id": "0011", "type": "猥亵"}
+]
+
+
+# 报警类型
+alarm_type = ["110电话报警", "派出所报警", "社会面报警"]
+
+
+
 class GxxGmBaseData:
     def __init__(self):
         self.info = "GxxGmBaseData"
+        self.levam_db = GxxGmLEVAMdb.GxxGmLEVAMdb()
+        self.levam_db.initialize_levam_orgs_info()
 
 
     def get_person_name(self):
@@ -295,6 +323,7 @@ class GxxGmBaseData:
         now_time = int(round(t * 1000))
         return now_time
 
+
     def get_alarm_content(self, province_, city_, county_, road_, alarm_situation_type_):
         # 生成报警内容
         address = province_
@@ -308,7 +337,7 @@ class GxxGmBaseData:
         return real_alarm_content, address
 
 
-    def get_random_division(org):
+    def get_random_division(self):
         # 获取随机的地址
         province_info = random.choice(org)
         province_name = province_info["name"]
@@ -327,3 +356,29 @@ class GxxGmBaseData:
             county_code = city_code
 
         return province_name, province_code, city_name, city_code, county_name, county_code
+
+
+    def get_org_and_police(self, org_infos):
+        # 随机获取接处警部门以及民警
+        while True:
+            org_info = random.choice(org_infos)
+            if len(org_info["users"]) == 0:
+                continue
+
+            user_info = random.choice(org_info["users"])
+            break
+
+        return org_info["org_code"].encode("utf8"), org_info["org_name"].encode("utf8"), \
+               user_info["user_code"].encode("utf8"), user_info["user_name"].encode("utf8")
+
+
+    def get_alarm_situation_type(self):
+        real_alarm_content = random.choice(alarm_content)
+        alarm_situation_id = real_alarm_content["id"]
+        alarm_situation_type = real_alarm_content["type"]
+        return alarm_situation_id, alarm_situation_type
+
+    def get_alarm_type(self):
+        # 获取报警类型
+        # 获取一个随机数
+        return random.choice(alarm_type)

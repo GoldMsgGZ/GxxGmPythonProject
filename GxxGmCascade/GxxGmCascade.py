@@ -15,11 +15,11 @@ import json
 import random
 import time
 import requests
-import GxxGmBaseData
 
 
 
 # DOMAIN 和 AUTHKEY 需要在平台级联功能处增加级联平台
+#from GxxGmGA import GxxGmGA
 import GxxGmGA
 
 DOMAIN = "53000000"
@@ -27,60 +27,12 @@ AUTHKEY = "00000000902001100763"
 
 ITEM_COUNT = 100
 
-# 报警类型
-alarm_type = ["110电话报警", "派出所报警", "社会面报警"]
-
-
-def get_alarm_type():
-    # 获取报警类型
-    # 获取一个随机数
-    return random.choice(alarm_type)
-
-#
-alarm_content = [
-    {"id": "0001", "type": "抢劫"},
-    {"id": "0002", "type": "盗窃"},
-    {"id": "0003", "type": "吸毒"},
-    {"id": "0004", "type": "打架"},
-    {"id": "0005", "type": "赌博"},
-    {"id": "0006", "type": "卖淫"},
-    {"id": "0007", "type": "嫖娼"},
-    {"id": "0008", "type": "诈骗"},
-    {"id": "0009", "type": "杀人"},
-    {"id": "0010", "type": "拐卖妇女儿童"},
-    {"id": "0011", "type": "猥亵"}
-]
-
-
-def get_alarm_situation_type():
-    real_alarm_content = random.choice(alarm_content)
-    alarm_situation_id = real_alarm_content["id"]
-    alarm_situation_type = real_alarm_content["type"]
-    return alarm_situation_id, alarm_situation_type
-
-
-
-
-
-def get_org_and_police(org_infos):
-    # 随机获取接处警部门以及民警
-    while True:
-        org_info = random.choice(org_infos)
-        if len(org_info["users"]) == 0:
-            continue
-
-        user_info = random.choice(org_info["users"])
-        break
-
-    return org_info["org_code"].encode("utf8"), org_info["org_name"].encode("utf8"),\
-           user_info["user_code"].encode("utf8"), user_info["user_name"].encode("utf8")
-
 
 class GxxGmPlatform:
 
     def __init__(self):
         self.platform_id="0001" # 平台ID
-        self.ga = GxxGmGA()
+        self.ga = GxxGmGA.GxxGmGA()
 
     def send_alarm_situations(self):
         # 发送警情信息
