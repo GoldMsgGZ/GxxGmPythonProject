@@ -117,11 +117,13 @@ class GxxGmGA:
 
         for index in range(item_count):
             # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
-            org_code, org_name, police_code, police_name = self.base_data.get_org_and_police(self.base_data.levam_db.org_infos)
+            org_code, org_name, police_code, police_name = self.base_data.get_org_and_police(
+                self.base_data.levam_db.org_infos)
             # 生成警情类型
             alarm_situation_id, alarm_situation_type = self.base_data.get_alarm_situation_type()
             # 生成案发地点和警情信息
-            province_name, province_code, city_name, city_code, county_name, county_code = self.base_data.get_random_division()
+            province_name, province_code, city_name, city_code, county_name, county_code = \
+                self.base_data.get_random_division()
             alarm_situation_info, address = self.base_data.get_alarm_content(province_name, city_name, county_name,
                                                                              self.base_data.road, alarm_situation_type)
 
@@ -166,6 +168,56 @@ class GxxGmGA:
             time.sleep(0.001)
 
         return receive_alarm_json, handle_alarm_situation_json
+
+
+    def generate_dzjk(self, item_count):
+        # 生成电子监控信息(非现场处罚)
+
+        # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
+        org_code, org_name, police_code, police_name = self.base_data.get_org_and_police(
+            self.base_data.levam_db.org_infos)
+
+        dzjk = dict()
+        dzjk["wtpz"] = list()
+
+        # "wtpz": [
+        #     {
+        #         "cjjg": "string",
+        #         "hphm": "string",
+        #         "hpzl": "string",
+        #         "jdsbh": "string",
+        #         "wfbh": "string",
+        #         "wfdz": "string",
+        #         "wfsj": "2019-07-24T03:14:21.394Z",
+        #         "wftzsh": "string",
+        #         "wfxw": "string",
+        #         "wj": [
+        #             "string"
+        #         ],
+        #         "xh": "string",
+        #         "zqmj": "string"
+        #     }
+        # ]
+
+        for index in range(item_count):
+            wtpz = dict()
+            wtpz["cjjg"] = org_code   # 违法采集机关，需在系统存在
+            wtpz["hphm"] = ""   # 号牌号码
+            wtpz["hpzl"] = ""   # 号牌种类
+            wtpz["jdsbh"] = ""  # 决定书编号
+            wtpz["wfbh"] = ""   # 违法编号
+            wtpz["wfdz"] = ""   # 违法地址
+            wtpz["wfsj"] = self.base_data.get_current_datetime()   # 违法时间
+            wtpz["wftzsh"] = "" # 违法通知书编号
+            wtpz["wfxw"] = ""   # 违法行为代码
+            wtpz["wj"] = list()
+            wtpz["xh"] = ""     # 序号
+            wtpz["zqmj"] = police_code   # 执勤民警警号，需在系统存在
+            dzjk["wtpz"].append(wtpz)
+
+            time.sleep(0.001)
+
+        return ""
 
 
 if __name__ == "__main__":
