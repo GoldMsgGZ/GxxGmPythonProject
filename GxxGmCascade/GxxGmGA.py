@@ -125,7 +125,7 @@ class GxxGmGA:
             province_name, province_code, city_name, city_code, county_name, county_code = \
                 self.base_data.get_random_division()
             alarm_situation_info, address = self.base_data.get_alarm_content(province_name, city_name, county_name,
-                                                                             self.base_data.road, alarm_situation_type)
+                                                                             GxxGmBaseData.road, alarm_situation_type)
 
             # 构建接警信息
             receive_alarm = dict()
@@ -173,54 +173,86 @@ class GxxGmGA:
     def generate_dzjk(self, item_count):
         # 生成电子监控信息(非现场处罚)
 
-        # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
-        org_code, org_name, police_code, police_name = self.base_data.get_org_and_police(
-            self.base_data.levam_db.org_infos)
-
         dzjk = dict()
         dzjk["wtpz"] = list()
 
-        # "wtpz": [
-        #     {
-        #         "cjjg": "string",
-        #         "hphm": "string",
-        #         "hpzl": "string",
-        #         "jdsbh": "string",
-        #         "wfbh": "string",
-        #         "wfdz": "string",
-        #         "wfsj": "2019-07-24T03:14:21.394Z",
-        #         "wftzsh": "string",
-        #         "wfxw": "string",
-        #         "wj": [
-        #             "string"
-        #         ],
-        #         "xh": "string",
-        #         "zqmj": "string"
-        #     }
-        # ]
-
         for index in range(item_count):
+            # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
+            org_code, org_name, police_code, police_name = self.base_data.get_org_and_police(
+                self.base_data.levam_db.org_infos)
+
+            alarm_situation_id, alarm_situation_type = self.base_data.get_alarm_situation_type()
+            province_name, province_code, city_name, city_code, county_name, county_code = \
+                self.base_data.get_random_division()
+            alarm_situation_info, address = self.base_data.get_alarm_content(province_name, city_name, county_name,
+                                                                             GxxGmBaseData.road, alarm_situation_type)
             wtpz = dict()
-            wtpz["cjjg"] = org_code   # 违法采集机关，需在系统存在
-            wtpz["hphm"] = ""   # 号牌号码
-            wtpz["hpzl"] = ""   # 号牌种类
-            wtpz["jdsbh"] = ""  # 决定书编号
-            wtpz["wfbh"] = ""   # 违法编号
-            wtpz["wfdz"] = ""   # 违法地址
+            wtpz["cjjg"] = org_code                         # 违法采集机关，需在系统存在
+            wtpz["hphm"] = self.base_data.get_car_card()    # 号牌号码
+            wtpz["hpzl"] = "普通车辆"   # 号牌种类
+            wtpz["jdsbh"] = "JDS" + org_code + str(self.base_data.get_current_datetime())  # 决定书编号
+            wtpz["wfbh"] = "WFBH" + org_code + str(self.base_data.get_current_datetime())   # 违法编号
+            wtpz["wfdz"] = address   # 违法地址
             wtpz["wfsj"] = self.base_data.get_current_datetime()   # 违法时间
-            wtpz["wftzsh"] = "" # 违法通知书编号
-            wtpz["wfxw"] = ""   # 违法行为代码
+            wtpz["wftzsh"] = "WFTZSH" + org_code + str(self.base_data.get_current_datetime()) # 违法通知书编号
+            wtpz["wfxw"] = "WFXW" + org_code + str(self.base_data.get_current_datetime())   # 违法行为代码
             wtpz["wj"] = list()
-            wtpz["xh"] = ""     # 序号
+            wtpz["xh"] = "XH" + org_code + str(self.base_data.get_current_datetime())    # 序号
             wtpz["zqmj"] = police_code   # 执勤民警警号，需在系统存在
             dzjk["wtpz"].append(wtpz)
 
             time.sleep(0.001)
 
-        return ""
+        return dzjk
+
+
+    def generate_qzhcsh(self, item_count):
+        # 生成强制措施(现场违法)
+
+        qzhcsh = dict()
+        qzhcsh["qzcs"] = list()
+
+        for index in range(item_count):
+            # 这里处理一下，接警人，处警人均为同一人，部门也是所属部门的
+            org_code, org_name, police_code, police_name = self.base_data.get_org_and_police(
+                self.base_data.levam_db.org_infos)
+
+            alarm_situation_id, alarm_situation_type = self.base_data.get_alarm_situation_type()
+            province_name, province_code, city_name, city_code, county_name, county_code = \
+                self.base_data.get_random_division()
+            alarm_situation_info, address = self.base_data.get_alarm_content(province_name, city_name, county_name,
+                                                                             GxxGmBaseData.road, alarm_situation_type)
+
+            qzcs = dict()
+            qzcs["dsr"] = self.base_data.get_person_name() # 当事人
+            qzcs["hphm"] = self.base_data.get_car_card() # 号牌号码
+            qzcs["hpzl"] = "普通车辆" # 号牌种类
+            qzcs["jszh"] = self.base_data.get_person_id() # 驾驶证号
+            qzcs["pzbh"] = "" #
+            qzcs["wfdz"] = "" #
+            qzcs["wfsj"] = "" #
+            qzcs["wfxw1"] = "" # 违法行为1
+            qzcs["wfxw2"] = ""
+            qzcs["wfxw3"] = ""
+            qzcs["wfxw4"] = ""
+            qzcs["wfxw5"] = ""
+            qzcs["wj"] = list()
+            qzcs["wslb"] = "" # 文书类别
+            qzcs["xh"] = "" # 序号
+            qzcs["zqbm"] = "" # 执勤部门编号
+            qzcs["zqmj"] = "" # 执勤民警警号
+
+            qzhcsh["wtpz"].append(qzcs)
+
+            time.sleep(0.001)
+
+        return qzhcsh
 
 
 if __name__ == "__main__":
     ga = GxxGmGA()
     jqaj = ga.generate_jq_aj(100)
-    print (jqaj)
+    # print (jqaj)
+
+    fxch = ga.generate_dzjk(1)
+    print (fxch)

@@ -241,6 +241,25 @@ org = [
     }
 ]
 
+birth_year = ["1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979",
+              "1980", "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989",
+              "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
+              "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009"]
+
+birth_month = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+
+birth_day = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15",
+             "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28"]
+
+
+province_short = ["辽", "吉", "黑", "蒙", "冀", "晋", "陕", "宁", "鲁", "皖", "苏", "浙", "渝", "沪", "津", "京", "豫",
+                  "鄂", "湘", "赣", "台", "闽", "滇", "琼", "川", "黔", "粤", "桂", "甘", "新", "藏", "青", "港", "澳"]
+
+car_card_letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                    "U", "V", "W", "X", "Y", "Z"]
+
+car_card_letter_type = ["letter", "number"]
+
 road = ["鳌鱼岗四巷", "北环路", "北街路", "上十二巷", "柴栏田南便新村六巷", "车陂农场路", "车陂美东街", "车站路", "程界成龙街",
         "晨邮路", "车陂街", "东风东路", "东风东路", "大观北路", "大观路", "东圃大观南路", "东马路", "东乔大道", "东横二路",
         "东横三路", "东横一路", "东横三路三巷", "大塘边街", "东横三路六巷", "东横四路", "东社四巷", "东社直街", "东圃菁映路",
@@ -306,6 +325,13 @@ class GxxGmBaseData:
             person_name = name_1 + name_2
 
         return person_name
+
+
+    def get_person_id(self):
+        id = "440000" + random.choice(birth_year) + random.choice(birth_month) + random.choice(birth_day)
+        for index in range(4):
+            id = id + random.choice(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+        return id
 
 
     def get_phone_nunber(self):
@@ -378,7 +404,24 @@ class GxxGmBaseData:
         alarm_situation_type = real_alarm_content["type"]
         return alarm_situation_id, alarm_situation_type
 
+
     def get_alarm_type(self):
         # 获取报警类型
         # 获取一个随机数
         return random.choice(alarm_type)
+
+
+    def get_car_card(self):
+        car_card = random.choice(province_short)
+        car_card = car_card + random.choice(car_card_letters)
+
+        letter_count = 0
+        number_count = 0
+        for index in range(5):
+            type = random.choice(car_card_letter_type)
+            if type == "letter":
+                car_card = car_card + random.choice(car_card_letters)
+            else:
+                car_card = car_card + random.choice(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"])
+
+        return car_card
