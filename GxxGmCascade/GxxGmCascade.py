@@ -20,6 +20,7 @@ AUTHKEY = "00000000902001100763"
 
 ITEM_COUNT = 100
 
+
 class GxxGmPlatform:
 
 
