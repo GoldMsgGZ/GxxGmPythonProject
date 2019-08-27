@@ -60,6 +60,7 @@ class GxxGmWSSimulator:
     # 2.查询组织架构与用户信息
     # 3.上报文件信息
 
+
     def __init__(self):
         # 初始化几个成员变量
         self.device_code = ""
@@ -75,6 +76,7 @@ class GxxGmWSSimulator:
 
         self.gateway_ip = "127.0.0.1"
         self.gateway_port = "6802"
+
 
     def startup(self, device_code, auth_key, domain, ip, version, dsj_code, gateway_ip, gateway_port):
         # 采集站开机
@@ -100,6 +102,7 @@ class GxxGmWSSimulator:
             err_code = 0
 
         return err_code
+
 
     def send_heartbeat(self):
         # 构建当前心跳信息
@@ -150,6 +153,7 @@ class GxxGmWSSimulator:
 
         return err_code
 
+
     def get_suborgs(self):
         # 获取子部门列表
 
@@ -178,6 +182,7 @@ class GxxGmWSSimulator:
         self.suborgs_list = content_json["body"]
 
         return err_code
+
 
     def get_users_info_org(self):
         # 获取指定部门下的直属用户列表
@@ -210,6 +215,7 @@ class GxxGmWSSimulator:
         self.police_list = content_json["body"]
 
         return err_code
+
 
     def put_file_info(self):
         # 上报文件信息
@@ -347,6 +353,7 @@ def workstation_func(gbcode):
         exit()
 
     workstation.run()
+
 
 if __name__ == "__main__":
     print("本地测试采集工作站")
